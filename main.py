@@ -2,17 +2,17 @@
 #                      o8888888o
 #                      88" . "88
 #                      (| -_- |)
-#                      0\  =  /0                        NAM MÔ A DI ĐÀ PHẬT
-#                    ___/`---'\___              
-#                  .' \\|     |// '.
-#                 / \\|||  :  |||// \
-#                / _||||| -:- |||||- \
-#               |   | \\\  -  /// |   |
-#               | \_|  ''\---/''  |_/ |
-#               \  .-\__  '-'  ___/-. /
-#             ___'. .'  /--.--\  `. .'___
-#          ."" '<  `.___\_<|>_/___.' >' "".
-#         | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+#                      0\  =  /0                                        NAM MÔ A DI ĐÀ PHẬT
+#                    ___/`---'\___                  Thí chủ con tên là Thân Ngọc Thiện, dương lịch hai sáu tháng ba năm 2003,
+#                  .' \\|     |// '.            Hiện tạm trú tại Phú Diễn, Hà Nội. Nguyên quán: Nghĩa Trung, TX. Việt Yên, Bắc Giang
+#                 / \\|||  :  |||// \           
+#                / _||||| -:- |||||- \                      Con lạy chín phương trời, con lạy mười phương đất
+#               |   | \\\  -  /// |   |                         Chư Phật mười phương, mười phương chư Phật
+#               | \_|  ''\---/''  |_/ |                         Cảm ơn trời đất trở che, thần thánh cứu độ
+#               \  .-\__  '-'  ___/-. /                Xin nhất tâm kính lễ Hoàng thiên Hậu thổ, Tiên Phật Thánh Thần
+#             ___'. .'  /--.--\  `. .'___                              Giúp đỡ con code sạch ít bugs
+#          ."" '<  `.___\_<|>_/___.' >' "".                     Đồng nhiệp vui vẻ, sếp quý, lương cao
+#         | | :  `- \`.;`\ _ /`;.`/ - ` : | |   S                  Sức khỏe dồi dào, tiền vào như nước
 #         \  \ `_.   \_ __\ /__ _/   .-` /  /
 #     =====`-.____`.___ \_____/___.-`___.-'=====
 #                       `=---='
