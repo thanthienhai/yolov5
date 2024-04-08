@@ -1,8 +1,31 @@
+#                       _oo0oo_
+#                      o8888888o
+#                      88" . "88
+#                      (| -_- |)
+#                      0\  =  /0                        NAM MÔ A DI ĐÀ PHẬT
+#                    ___/`---'\___              
+#                  .' \\|     |// '.
+#                 / \\|||  :  |||// \
+#                / _||||| -:- |||||- \
+#               |   | \\\  -  /// |   |
+#               | \_|  ''\---/''  |_/ |
+#               \  .-\__  '-'  ___/-. /
+#             ___'. .'  /--.--\  `. .'___
+#          ."" '<  `.___\_<|>_/___.' >' "".
+#         | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+#         \  \ `_.   \_ __\ /__ _/   .-` /  /
+#     =====`-.____`.___ \_____/___.-`___.-'=====
+#                       `=---='
+#
+#     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#            Phật phù hộ, không bao giờ Bug
+#     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 import cv2
 import time
 import serial
 import numpy as np
-import supervision as sv
 
 from yolov8 import YOLOv8, draw_detections
 # from tracking import BYTETracker
@@ -17,7 +40,7 @@ yolov8_detector = YOLOv8(model_path, conf_thres=0.5, iou_thres=0.5)
 ser = serial.Serial('/dev/ttyUSB0', 115200)
 # tracker = BYTETracker()
 STATE = '0'
-DESIRED_CLASS_ID
+DESIRED_CLASS_ID = 1
 
 def get_state():
     if ser.inWaiting() == 0:
@@ -67,78 +90,64 @@ def write_data(filtered_boxes):
         data = str(x)+','+str(y)+'\r'
         ser.write(data.encode())
 
-def silo0_available(count):
-    if count > 0:
-        return True
-    return False
+#đếm số lượng của từng loại silo
+'''
+Quy ước: 
+['ball_r', 'ball_b', 'silo0', 'silo1_r', 'silo1_b', 'silo2']
+[  '!',       '!',      '!',      '!',      '!',      '!']
+[  '0',       '1',      '2',      '3',      '4',      '5']
+'''
+def count_object_each_class_id(class_ids):
+  frequency = {}
+  for id in class_ids:
+    if id in frequency:
+      frequency[id] += 1
+    else:
+      frequency[id] = 1
+  return frequency
 
-def silo2_available(count):
-    if count > 0: 
-        return True
-    return False
+#Hàm lọc box theo id tương ứng: 
+#Hàm lọc box theo id tương ứng: 
+def filter_boxes(boxes, class_ids, id):
+  boxes_class_id = []  # Danh sách lưu trữ boxes có class_id = id
+  class_ids_class_id = []
 
-def silo1_t_available(count):
-    if count > 0:
-        return True
-    return False
+  for box, class_id in zip(boxes, class_ids):
+    if class_id == id:
+      boxes_class_id.append(box)
+      class_ids_class_id.append(class_id)
 
-def count_objects_with_name(frame, name):
-    # Load pre-trained YOLOv8 model
-
-    result = yolov8_detector(frame, agnostic_nms=True, conf=0.5)[0]
+  return boxes_class_id, class_ids_class_id
 
 
-    detections = sv.Detections.from_ultralytics(result)
-
-    count = 0
-    for obj in detections:
-        print(obj[5]['class_name'])
-        if (obj[5]['class_name'] == name):
-          count += 1
-    
-    return count
 #cv2.namedWindow("Detected Objects", cv2.WINDOW_NORMAL)
 while True:
 
     # Read frame from the video
     ret, frame = get_frame()
 
-    
-
     if not ret:
         break
     
     boxes, scores, class_ids = detect(frame)
 
+    #Phân loại từng loại tương ứng với từng trường hợp trong 
     if STATE == '0':
-        DESIRED_CLASS_ID = 1
+        boxes, class_ids = filter_boxes(boxes, class_ids, 0)
     elif STATE == '1':
-        count_silo0 = count_objects_with_name(frame, 'silo0')
-        count_silo1_t = count_objects_with_name(frame, 'silo1_b')
-        count_silo2 = count_objects_with_name(frame, 'silo2')
-        if silo2_available(count_silo2):
-            DESIRED_CLASS_ID = 6
-        elif silo1_t_available(count_silo1_t):
-            DESIRED_CLASS_ID = 4
-        elif silo0_available(count_silo0):
-            DESIRED_CLASS_ID = 3
-    
-    filtered_boxes = []
-    filtered_scores = []
-    filtered_class_ids = []
-    
-    for i in range(len(boxes)):
-        if class_ids[i] == DESIRED_CLASS_ID:  
-            filtered_boxes.append(boxes[i])
-            filtered_scores.append(scores[i])
-            filtered_class_ids.append(class_ids[i])
+        freq = count_object_each_class_id(class_ids)
+        if (freq[5] > 0):
+            boxes, class_ids = filter_boxes(boxes, class_ids, 5)
+        elif (freq[3] > 0):
+            boxes, class_ids = filter_boxes(boxes, class_ids, 3)
+        else:
+            boxes, class_ids = filter_boxes(boxes, class_ids, 2)
 
-        
     
     #write_data(filtered_boxes)
-    if len(filtered_boxes) > 0:
-        id_get = np.argmax((np.array(filtered_boxes)[:,2]-np.array(filtered_boxes)[:,0]) * (np.array(filtered_boxes)[:,3]-np.array(filtered_boxes)[:,1]))
-        x, y = (filtered_boxes[id_get][2] + filtered_boxes[id_get][0])//2, (filtered_boxes[id_get][3] + filtered_boxes[id_get][1])//2
+    if len(boxes) > 0:
+        id_get = np.argmax((np.array(boxes)[:,2]-np.array(boxes)[:,0]) * (np.array(boxes)[:,3]-np.array(boxes)[:,1]))
+        x, y = (boxes[id_get][2] + boxes[id_get][0])//2, (boxes[id_get][3] + boxes[id_get][1])//2
 
         data = str(x)+','+str(y)+'\r'
         ser.write(data.encode())
