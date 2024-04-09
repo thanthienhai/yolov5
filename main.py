@@ -2,17 +2,17 @@
 #                      o8888888o
 #                      88" . "88
 #                      (| -_- |)
-#                      0\  =  /0                                        NAM MÔ A DI ĐÀ PHẬT
-#                    ___/`---'\___                  Thí chủ con tên là Thân Ngọc Thiện, dương lịch hai sáu tháng ba năm 2003,
-#                  .' \\|     |// '.            Hiện tạm trú tại Phú Diễn, Hà Nội. Nguyên quán: Nghĩa Trung, TX. Việt Yên, Bắc Giang
-#                 / \\|||  :  |||// \           
-#                / _||||| -:- |||||- \                      Con lạy chín phương trời, con lạy mười phương đất
-#               |   | \\\  -  /// |   |                         Chư Phật mười phương, mười phương chư Phật
-#               | \_|  ''\---/''  |_/ |                         Cảm ơn trời đất trở che, thần thánh cứu độ
-#               \  .-\__  '-'  ___/-. /                Xin nhất tâm kính lễ Hoàng thiên Hậu thổ, Tiên Phật Thánh Thần
-#             ___'. .'  /--.--\  `. .'___                              Giúp đỡ con code sạch ít bugs
-#          ."" '<  `.___\_<|>_/___.' >' "".                     Đồng nhiệp vui vẻ, sếp quý, lương cao
-#         | | :  `- \`.;`\ _ /`;.`/ - ` : | |   S                  Sức khỏe dồi dào, tiền vào như nước
+#                      0\  =  /0                        NAM MÔ A DI ĐÀ PHẬT
+#                    ___/`---'\___              
+#                  .' \\|     |// '.
+#                 / \\|||  :  |||// \
+#                / _||||| -:- |||||- \
+#               |   | \\\  -  /// |   |
+#               | \_|  ''\---/''  |_/ |
+#               \  .-\__  '-'  ___/-. /
+#             ___'. .'  /--.--\  `. .'___
+#          ."" '<  `.___\_<|>_/___.' >' "".
+#         | | :  `- \`.;`\ _ /`;.`/ - ` : | |
 #         \  \ `_.   \_ __\ /__ _/   .-` /  /
 #     =====`-.____`.___ \_____/___.-`___.-'=====
 #                       `=---='
@@ -39,8 +39,8 @@ model_path = "weights/best243_360.onnx"
 yolov8_detector = YOLOv8(model_path, conf_thres=0.5, iou_thres=0.5)
 ser = serial.Serial('/dev/ttyUSB0', 115200)
 # tracker = BYTETracker()
+STATE_ball = '0'
 STATE = '0'
-DESIRED_CLASS_ID = 1
 
 def get_state():
     if ser.inWaiting() == 0:
@@ -63,10 +63,8 @@ def get_frame():
     current_state = get_state()
     STATE = current_state if current_state != STATE and current_state != '' else STATE
     if STATE == '0':
-        DESIRED_CLASS_ID = 1
         return cap0.read()
     else:
-        DESIRED_CLASS_ID = 3
         return cap1.read()
 
 def detect(frame):
@@ -117,6 +115,24 @@ def filter_boxes(boxes, class_ids, id):
 
   return boxes_class_id, class_ids_class_id
 
+#Get type ball
+'''
+Quy ước: 
+STATE_ball = '0' với bóng đỏ (r)
+STATE_ball = '1' vơi bóng xanh (b)
+'''
+def get_type_ball():
+    STATE_ball = get_state()
+    ball_id = 0
+    if STATE_ball == '0':
+        ball_id = 0
+    else:
+        ball_id = 1
+    
+    return ball_id
+
+
+type_ball = get_type_ball()
 
 #cv2.namedWindow("Detected Objects", cv2.WINDOW_NORMAL)
 while True:
@@ -131,13 +147,13 @@ while True:
 
     #Phân loại từng loại tương ứng với từng trường hợp trong 
     if STATE == '0':
-        boxes, class_ids = filter_boxes(boxes, class_ids, 0)
+        boxes, class_ids = filter_boxes(boxes, class_ids, type_ball)
     elif STATE == '1':
         freq = count_object_each_class_id(class_ids)
         if (freq[5] > 0):
             boxes, class_ids = filter_boxes(boxes, class_ids, 5)
-        elif (freq[3] > 0):
-            boxes, class_ids = filter_boxes(boxes, class_ids, 3)
+        elif (freq[type_ball] > 0):
+            boxes, class_ids = filter_boxes(boxes, class_ids, type_ball)
         else:
             boxes, class_ids = filter_boxes(boxes, class_ids, 2)
 
