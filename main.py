@@ -131,6 +131,21 @@ def get_type_ball():
     
     return ball_id
 
+def sort_boxes_by_area(boxes, center_x, center_y):
+
+    areas = (np.array(boxes)[:, 2] - np.array(boxes)[:, 0]) * \
+            (np.array(boxes)[:, 3] - np.array(boxes)[:, 1])
+
+    sorted_boxes = sorted(zip(boxes, areas, range(len(boxes))), key=lambda x: x[1], reverse=True)
+    # n% = 20%
+    if (sorted_boxes[0][1]/sorted_boxes[1][1] > 1.2):
+        return sorted_boxes[0]
+    else:
+        id_get = np.argmin(np.sqrt(((np.array(boxes)[:,2]+np.array(boxes)[:,0])//2-center_x)**2 + ((np.array(boxes)[:,3]+np.array(boxes)[:,1])//2-center_y)**2))
+        return sorted_boxes[id_get]
+
+    #return sorted_boxes
+
 
 type_ball = get_type_ball()
 
@@ -139,6 +154,10 @@ while True:
 
     # Read frame from the video
     ret, frame = get_frame()
+
+    image_height, image_width, _ = frame.shape
+    center_x = image_width // 2
+    center_y = image_height // 2
 
     if not ret:
         break
@@ -159,10 +178,16 @@ while True:
 
     
     #write_data(filtered_boxes)
-    if len(boxes) > 0:
-        id_get = np.argmax((np.array(boxes)[:,2]-np.array(boxes)[:,0]) * (np.array(boxes)[:,3]-np.array(boxes)[:,1]))
-        x, y = (boxes[id_get][2] + boxes[id_get][0])//2, (boxes[id_get][3] + boxes[id_get][1])//2
+    if len(boxes) > 1:
 
+        boxes = sort_boxes_by_area(boxes, center_x, center_y)
+        id_get = 0
+        x, y = (boxes[id_get][2] + boxes[id_get][0])//2, (boxes[id_get][3] + boxes[id_get][1])//2
+        data = str(x)+','+str(y)+'\r'
+        ser.write(data.encode())
+    elif len(boxes) == 1:
+        id_get = 0
+        x, y = (boxes[id_get][2] + boxes[id_get][0])//2, (boxes[id_get][3] + boxes[id_get][1])//2
         data = str(x)+','+str(y)+'\r'
         ser.write(data.encode())
     else:
